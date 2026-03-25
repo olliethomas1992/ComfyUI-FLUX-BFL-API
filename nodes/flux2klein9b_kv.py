@@ -1,4 +1,4 @@
-"""FLUX.2 [Klein 9B KV] — V3 async node with 4 IMAGE slots and KV caching."""
+"""FLUX.2 [Klein 9B KV] — V3 async node with 4 IMAGE slots."""
 from comfy_api.latest import ComfyExtension, io
 import comfy.utils
 from .base import image_to_base64, create_blank_image, post_request, poll_for_result
@@ -15,21 +15,21 @@ class Flux2Klein9BKV(io.ComfyNode):
             node_id="Flux2Klein9BKV_BFL",
             display_name="FLUX.2 [Klein 9B KV] (BFL)",
             category="BFL/FLUX.2",
-            description="Generate or edit images via FLUX.2 [Klein 9B] with KV caching — up to 4 reference images",
+            description="Generate or edit images via FLUX.2 [Klein 9B KV] API with up to 4 reference images",
             inputs=[
-                io.String.Input("prompt", default="", multiline=True),
-                io.Int.Input("safety_tolerance", default=2, min=0, max=5, tooltip="0=strict, 5=lenient"),
-                io.Combo.Input("output_format", options=["jpeg", "png"], default="jpeg"),
-                io.Boolean.Input("transparent_bg", default=False, tooltip="Remove background, returns RGBA PNG"),
-                io.Image.Input("image_1", optional=True),
-                io.Image.Input("image_2", optional=True),
-                io.Image.Input("image_3", optional=True),
-                io.Image.Input("image_4", optional=True),
-                io.Int.Input("width", default=0, min=0, tooltip="0=auto, min 64"),
-                io.Int.Input("height", default=0, min=0, tooltip="0=auto, min 64"),
-                io.Int.Input("seed", default=-1, tooltip="-1=random"),
-                io.String.Input("webhook_url", default="", optional=True),
-                io.String.Input("webhook_secret", default="", optional=True),
+                io.String.Input("prompt", default="", multiline=True, tooltip="Text prompt describing the desired image"),
+                io.Int.Input("seed", default=0, min=0, max=0xFFFFFFFFFFFFFFFF, control_after_generate=True, tooltip="Seed for reproducible results"),
+                io.Int.Input("width", default=1024, min=0, max=4096, step=32, tooltip="Image width in pixels (0 = auto, min 64, must be multiple of 32)"),
+                io.Int.Input("height", default=1024, min=0, max=4096, step=32, tooltip="Image height in pixels (0 = auto, min 64, must be multiple of 32)"),
+                io.Int.Input("safety_tolerance", default=2, min=0, max=5, tooltip="Content filter strictness (0 = most strict, 5 = most lenient)"),
+                io.Combo.Input("output_format", options=["jpeg", "png"], default="jpeg", tooltip="Output image format"),
+                io.Boolean.Input("transparent_bg", default=False, tooltip="Remove background and return RGBA PNG"),
+                io.Image.Input("image_1", optional=True, tooltip="Reference image 1"),
+                io.Image.Input("image_2", optional=True, tooltip="Reference image 2"),
+                io.Image.Input("image_3", optional=True, tooltip="Reference image 3"),
+                io.Image.Input("image_4", optional=True, tooltip="Reference image 4"),
+                io.String.Input("webhook_url", default="", optional=True, tooltip="Optional webhook URL for async notifications"),
+                io.String.Input("webhook_secret", default="", optional=True, tooltip="Optional webhook secret for verification"),
                 BflConfig.Input("config", optional=True),
             ],
             outputs=[
@@ -41,16 +41,19 @@ class Flux2Klein9BKV(io.ComfyNode):
     async def execute(
         cls,
         prompt,
+        seed,
+        width,
+        height,
         safety_tolerance,
         output_format,
         transparent_bg,
         image_1=None, image_2=None, image_3=None, image_4=None,
-        width=0, height=0, seed=-1,
         webhook_url="", webhook_secret="",
         config=None,
     ):
         arguments = {
             "prompt": prompt,
+            "seed": seed,
             "safety_tolerance": safety_tolerance,
             "output_format": output_format,
             "transparent_bg": transparent_bg,
@@ -68,8 +71,6 @@ class Flux2Klein9BKV(io.ComfyNode):
             arguments["width"] = width
         if height > 0:
             arguments["height"] = height
-        if seed != -1:
-            arguments["seed"] = seed
         if webhook_url:
             arguments["webhook_url"] = webhook_url
         if webhook_secret:

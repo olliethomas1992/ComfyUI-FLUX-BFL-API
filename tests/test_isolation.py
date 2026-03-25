@@ -10,6 +10,12 @@ import torch
 from nodes.flux2max_direct import Flux2Max
 from nodes.flux2klein_direct import Flux2Klein9B
 
+# Common kwargs
+FLUX2_KWARGS = dict(prompt_upsampling=True, seed=0, width=1024, height=1024,
+                    safety_tolerance=2, output_format="jpeg", transparent_bg=False)
+KLEIN_KWARGS = dict(seed=0, width=1024, height=1024,
+                    safety_tolerance=2, output_format="jpeg", transparent_bg=False)
+
 
 def run_async(coro):
     return asyncio.run(coro)
@@ -54,8 +60,8 @@ class TestPayloadIsolation:
         red_img = _make_image(255, 0, 0)
         blue_img = _make_image(0, 0, 255)
 
-        run_async(Flux2Max.execute(prompt="prompt A", prompt_upsampling=True, safety_tolerance=2, output_format="jpeg", transparent_bg=False, image_1=red_img))
-        run_async(Flux2Max.execute(prompt="prompt B", prompt_upsampling=True, safety_tolerance=2, output_format="jpeg", transparent_bg=False, image_1=blue_img))
+        run_async(Flux2Max.execute(prompt="prompt A", **FLUX2_KWARGS, image_1=red_img))
+        run_async(Flux2Max.execute(prompt="prompt B", **FLUX2_KWARGS, image_1=blue_img))
 
         assert mock_post.call_count == 2
 
@@ -72,8 +78,8 @@ class TestPayloadIsolation:
         green_img = _make_image(0, 255, 0)
         white_img = _make_image(255, 255, 255)
 
-        run_async(Flux2Klein9B.execute(prompt="prompt C", safety_tolerance=2, output_format="jpeg", transparent_bg=False, image_1=green_img))
-        run_async(Flux2Klein9B.execute(prompt="prompt D", safety_tolerance=2, output_format="jpeg", transparent_bg=False, image_1=white_img))
+        run_async(Flux2Klein9B.execute(prompt="prompt C", **KLEIN_KWARGS, image_1=green_img))
+        run_async(Flux2Klein9B.execute(prompt="prompt D", **KLEIN_KWARGS, image_1=white_img))
 
         args_a = mock_post.call_args_list[0][0][1]
         args_b = mock_post.call_args_list[1][0][1]
@@ -99,8 +105,8 @@ class TestConcurrentExecution:
         blue_img = _make_image(0, 0, 255)
 
         async def run_both():
-            r1 = Flux2Max.execute(prompt="async-A", prompt_upsampling=True, safety_tolerance=2, output_format="jpeg", transparent_bg=False, image_1=red_img)
-            r2 = Flux2Max.execute(prompt="async-B", prompt_upsampling=True, safety_tolerance=2, output_format="jpeg", transparent_bg=False, image_1=blue_img)
+            r1 = Flux2Max.execute(prompt="async-A", **FLUX2_KWARGS, image_1=red_img)
+            r2 = Flux2Max.execute(prompt="async-B", **FLUX2_KWARGS, image_1=blue_img)
             return await asyncio.gather(r1, r2)
 
         results = run_async(run_both())
@@ -128,8 +134,8 @@ class TestMixedNodeTypes:
         mock_klein_post.side_effect = lambda *a, **kw: next(task_ids_klein)
 
         async def run_both():
-            r1 = Flux2Max.execute(prompt="max-prompt", prompt_upsampling=True, safety_tolerance=2, output_format="jpeg", transparent_bg=False, image_1=_make_image(255, 0, 0))
-            r2 = Flux2Klein9B.execute(prompt="klein-prompt", safety_tolerance=2, output_format="jpeg", transparent_bg=False, image_1=_make_image(0, 255, 0))
+            r1 = Flux2Max.execute(prompt="max-prompt", **FLUX2_KWARGS, image_1=_make_image(255, 0, 0))
+            r2 = Flux2Klein9B.execute(prompt="klein-prompt", **KLEIN_KWARGS, image_1=_make_image(0, 255, 0))
             return await asyncio.gather(r1, r2)
 
         results = run_async(run_both())

@@ -3,11 +3,30 @@ import pytest
 
 
 # ---------------------------------------------------------------------------
-# Flux2Inputs models (8 images + disable_pup): Max, Pro, Pro Preview
+# Shared seed validation helper
+# ---------------------------------------------------------------------------
+
+def _get_seed_input(schema):
+    """Extract seed input from schema."""
+    seeds = [i for i in schema.inputs if hasattr(i, "id") and i.id == "seed"]
+    assert len(seeds) == 1, "Expected exactly one seed input"
+    return seeds[0]
+
+
+def _assert_seed_control(schema):
+    """Verify seed has control_after_generate=True."""
+    seed = _get_seed_input(schema)
+    assert seed.kwargs.get("control_after_generate") is True, "seed missing control_after_generate=True"
+    assert seed.kwargs.get("min") == 0
+    assert seed.kwargs.get("max") == 0xFFFFFFFFFFFFFFFF
+
+
+# ---------------------------------------------------------------------------
+# Flux2Inputs models (8 images + prompt_upsampling): Max, Pro, Pro Preview
 # ---------------------------------------------------------------------------
 
 class TestFlux2InputsNodes:
-    """Nodes using the Flux2Inputs schema: 8 images, disable_pup, transparent_bg."""
+    """Nodes using the Flux2Inputs schema: 8 images, prompt_upsampling, transparent_bg."""
 
     NODES = [
         ("nodes.flux2max_direct", "Flux2Max", "Flux2Max_BFL", "FLUX.2 [Max] (BFL)", "BFL/FLUX.2"),
@@ -53,6 +72,13 @@ class TestFlux2InputsNodes:
         assert len(tbg_inputs) == 1
 
     @pytest.mark.parametrize("module,cls_name,node_id,display_name,category", NODES)
+    def test_seed_has_control_after_generate(self, module, cls_name, node_id, display_name, category):
+        import importlib
+        mod = importlib.import_module(module)
+        cls = getattr(mod, cls_name)
+        _assert_seed_control(cls.define_schema())
+
+    @pytest.mark.parametrize("module,cls_name,node_id,display_name,category", NODES)
     def test_execute_is_classmethod(self, module, cls_name, node_id, display_name, category):
         import importlib
         mod = importlib.import_module(module)
@@ -61,11 +87,11 @@ class TestFlux2InputsNodes:
 
 
 # ---------------------------------------------------------------------------
-# Flux2KleinInputs models (4 images, no disable_pup): Klein 9B, Klein 4B, Klein 9B KV
+# Flux2KleinInputs models (4 images, no prompt_upsampling): Klein 9B, Klein 4B, Klein 9B KV
 # ---------------------------------------------------------------------------
 
 class TestFlux2KleinInputsNodes:
-    """Nodes using the Flux2KleinInputs schema: 4 images, no disable_pup, transparent_bg."""
+    """Nodes using the Flux2KleinInputs schema: 4 images, no prompt_upsampling, transparent_bg."""
 
     NODES = [
         ("nodes.flux2klein_direct", "Flux2Klein9B", "Flux2Klein9B_BFL", "FLUX.2 [Klein 9B] (BFL)", "BFL/FLUX.2"),
@@ -109,6 +135,13 @@ class TestFlux2KleinInputsNodes:
         schema = cls.define_schema()
         tbg_inputs = [i for i in schema.inputs if hasattr(i, "id") and i.id == "transparent_bg"]
         assert len(tbg_inputs) == 1
+
+    @pytest.mark.parametrize("module,cls_name,node_id,display_name,category", NODES)
+    def test_seed_has_control_after_generate(self, module, cls_name, node_id, display_name, category):
+        import importlib
+        mod = importlib.import_module(module)
+        cls = getattr(mod, cls_name)
+        _assert_seed_control(cls.define_schema())
 
     @pytest.mark.parametrize("module,cls_name,node_id,display_name,category", NODES)
     def test_execute_is_classmethod(self, module, cls_name, node_id, display_name, category):
@@ -167,6 +200,10 @@ class TestFlux2FlexNode:
         schema = Flux2Flex.define_schema()
         s = [i for i in schema.inputs if hasattr(i, "id") and i.id == "steps"]
         assert len(s) == 1
+
+    def test_seed_has_control_after_generate(self):
+        from nodes.flux2flex import Flux2Flex
+        _assert_seed_control(Flux2Flex.define_schema())
 
     def test_no_disable_pup_in_api_payload(self):
         """Flex uses prompt_upsampling natively, not disable_pup."""

@@ -17,27 +17,27 @@ class Flux2Flex(io.ComfyNode):
             category="BFL/FLUX.2",
             description="Generate or edit images via FLUX.2 [Flex] API with guidance and steps control",
             inputs=[
-                io.String.Input("prompt", default="", multiline=True),
-                io.Boolean.Input("prompt_upsampling", default=True, tooltip="Use prompt upsampling to enhance your prompt"),
+                io.String.Input("prompt", default="", multiline=True, tooltip="Text prompt describing the desired image"),
+                io.Boolean.Input("prompt_upsampling", default=True, tooltip="Enhance your prompt with AI-powered upsampling for better results"),
                 io.Float.Input("guidance", default=5.0, min=1.5, max=10.0, step=0.1,
-                               tooltip="Higher = better prompt adherence, lower = more realistic"),
+                               tooltip="Prompt adherence (higher = stricter prompt following, lower = more realistic/natural)"),
                 io.Int.Input("steps", default=50, min=1, max=50,
-                             tooltip="Higher = more detailed and realistic"),
-                io.Int.Input("safety_tolerance", default=2, min=0, max=5, tooltip="0=strict, 5=lenient"),
-                io.Combo.Input("output_format", options=["jpeg", "png"], default="jpeg"),
-                io.Image.Input("image_1", optional=True),
-                io.Image.Input("image_2", optional=True),
-                io.Image.Input("image_3", optional=True),
-                io.Image.Input("image_4", optional=True),
-                io.Image.Input("image_5", optional=True),
-                io.Image.Input("image_6", optional=True),
-                io.Image.Input("image_7", optional=True),
-                io.Image.Input("image_8", optional=True),
-                io.Int.Input("width", default=0, min=0, tooltip="0=auto, min 64"),
-                io.Int.Input("height", default=0, min=0, tooltip="0=auto, min 64"),
-                io.Int.Input("seed", default=-1, tooltip="-1=random"),
-                io.String.Input("webhook_url", default="", optional=True),
-                io.String.Input("webhook_secret", default="", optional=True),
+                             tooltip="Generation steps (higher = more detailed and realistic)"),
+                io.Int.Input("seed", default=0, min=0, max=0xFFFFFFFFFFFFFFFF, control_after_generate=True, tooltip="Seed for reproducible results"),
+                io.Int.Input("width", default=1024, min=0, max=4096, step=32, tooltip="Image width in pixels (0 = auto, min 64, must be multiple of 32)"),
+                io.Int.Input("height", default=1024, min=0, max=4096, step=32, tooltip="Image height in pixels (0 = auto, min 64, must be multiple of 32)"),
+                io.Int.Input("safety_tolerance", default=2, min=0, max=5, tooltip="Content filter strictness (0 = most strict, 5 = most lenient)"),
+                io.Combo.Input("output_format", options=["jpeg", "png"], default="jpeg", tooltip="Output image format"),
+                io.Image.Input("image_1", optional=True, tooltip="Reference image 1"),
+                io.Image.Input("image_2", optional=True, tooltip="Reference image 2"),
+                io.Image.Input("image_3", optional=True, tooltip="Reference image 3"),
+                io.Image.Input("image_4", optional=True, tooltip="Reference image 4"),
+                io.Image.Input("image_5", optional=True, tooltip="Reference image 5"),
+                io.Image.Input("image_6", optional=True, tooltip="Reference image 6"),
+                io.Image.Input("image_7", optional=True, tooltip="Reference image 7"),
+                io.Image.Input("image_8", optional=True, tooltip="Reference image 8"),
+                io.String.Input("webhook_url", default="", optional=True, tooltip="Optional webhook URL for async notifications"),
+                io.String.Input("webhook_secret", default="", optional=True, tooltip="Optional webhook secret for verification"),
                 BflConfig.Input("config", optional=True),
             ],
             outputs=[
@@ -52,11 +52,13 @@ class Flux2Flex(io.ComfyNode):
         prompt_upsampling,
         guidance,
         steps,
+        seed,
+        width,
+        height,
         safety_tolerance,
         output_format,
         image_1=None, image_2=None, image_3=None, image_4=None,
         image_5=None, image_6=None, image_7=None, image_8=None,
-        width=0, height=0, seed=-1,
         webhook_url="", webhook_secret="",
         config=None,
     ):
@@ -65,6 +67,7 @@ class Flux2Flex(io.ComfyNode):
             "prompt_upsampling": prompt_upsampling,
             "guidance": guidance,
             "steps": steps,
+            "seed": seed,
             "safety_tolerance": safety_tolerance,
             "output_format": output_format,
         }
@@ -83,8 +86,6 @@ class Flux2Flex(io.ComfyNode):
             arguments["width"] = width
         if height > 0:
             arguments["height"] = height
-        if seed != -1:
-            arguments["seed"] = seed
         if webhook_url:
             arguments["webhook_url"] = webhook_url
         if webhook_secret:
