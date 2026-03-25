@@ -1,29 +1,19 @@
 # ComfyUI-FLUX.2-API-Nodes
 
-ComfyUI **V3** node pack for all **FLUX.2** models via the [BFL API](https://api.bfl.ai/).
-
-> 🔀 Forked from [gelasdev/ComfyUI-FLUX-BFL-API](https://github.com/gelasdev/ComfyUI-FLUX-BFL-API). Rewritten as V3 async nodes with direct IMAGE inputs.
+ComfyUI V3 nodes for generating images with [FLUX.2](https://blackforestlabs.ai/) models via the BFL API. Accepts ComfyUI IMAGE tensors directly — no separate base64 conversion needed.
 
 ## Nodes
 
-| Node | Display Name | Images | Key Features |
-|---|---|---|---|
-| **Flux2Max** | FLUX.2 [Max] (BFL) | 8 | Prompt upsampling, transparent BG |
-| **Flux2Pro** | FLUX.2 [Pro] (BFL) | 8 | Prompt upsampling, transparent BG |
-| **Flux2ProPreview** | FLUX.2 [Pro] Preview (BFL) | 8 | Prompt upsampling, transparent BG |
-| **Flux2Klein9B** | FLUX.2 [Klein 9B] (BFL) | 4 | Transparent BG |
-| **Flux2Klein4B** | FLUX.2 [Klein 4B] (BFL) | 4 | Transparent BG |
-| **Flux2Klein9BKV** | FLUX.2 [Klein 9B KV] (BFL) | 4 | Transparent BG |
-| **Flux2Flex** | FLUX.2 [Flex] (BFL) | 8 | Guidance, steps, prompt upsampling |
-| **FluxConfig** | Flux Config (BFL) | — | API key + region config |
-
-### All generation nodes
-
-- ✅ Accept ComfyUI `IMAGE` tensors directly (no separate base64 node needed)
-- ✅ Convert to base64 internally
-- ✅ Async polling with progress bar
-- ✅ Seed with `control_after_generate` (fixed / randomize / increment / decrement)
-- ✅ Return blank image on failure instead of crashing
+| Node | Display Name | Image Inputs |
+|---|---|---|
+| **Flux2Max** | FLUX.2 [Max] (BFL) | 8 |
+| **Flux2Pro** | FLUX.2 [Pro] (BFL) | 8 |
+| **Flux2ProPreview** | FLUX.2 [Pro] Preview (BFL) | 8 |
+| **Flux2Klein9B** | FLUX.2 [Klein 9B] (BFL) | 4 |
+| **Flux2Klein4B** | FLUX.2 [Klein 4B] (BFL) | 4 |
+| **Flux2Klein9BKV** | FLUX.2 [Klein 9B KV] (BFL) | 4 |
+| **Flux2Flex** | FLUX.2 [Flex] (BFL) | 8 |
+| **FluxConfig** | Flux Config (BFL) | — |
 
 ## Installation
 
@@ -37,7 +27,7 @@ pip install -r ComfyUI-FLUX.2-API-Nodes/requirements.txt
 
 1. Get an API key from [api.bfl.ai](https://api.bfl.ai/)
 2. Either:
-   - Add a **Flux Config** node and enter your key, or
+   - Add a **Flux Config** node to your workflow and enter your key, or
    - Create `config.ini` in the node pack directory:
      ```ini
      [API]
@@ -52,4 +42,6 @@ pip install -r ComfyUI-FLUX.2-API-Nodes/requirements.txt
 
 ## Credits
 
-Original work by [@gelasdev](https://github.com/gelasdev), [@pleberer](https://github.com/pleberer), and [@Duanyll](https://github.com/Duanyll).
+Huge thanks to [Black Forest Labs](https://blackforestlabs.ai/) for building incredible image models and making them accessible via API.
+
+Original node pack by [@gelasdev](https://github.com/gelasdev), [@pleberer](https://github.com/pleberer), and [@Duanyll](https://github.com/Duanyll).
