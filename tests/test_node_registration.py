@@ -159,7 +159,7 @@ def test_config_node_has_schema():
     from nodes.config_node import FluxConfig
     schema = FluxConfig.define_schema()
     assert schema.node_id == "FluxConfig_BFL"
-    assert schema.display_name == "Flux Config"
+    assert schema.display_name == "FLUX.2 Config"
     assert schema.category == "BFL/Config"
 
 

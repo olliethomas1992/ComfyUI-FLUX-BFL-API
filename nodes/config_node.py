@@ -15,7 +15,7 @@ class FluxConfig(io.ComfyNode):
     def define_schema(cls):
         return io.Schema(
             node_id="FluxConfig_BFL",
-            display_name="Flux Config",
+            display_name="FLUX.2 Config",
             category="BFL/Config",
             description="Configure BFL API key and endpoint for Flux nodes",
             inputs=[
