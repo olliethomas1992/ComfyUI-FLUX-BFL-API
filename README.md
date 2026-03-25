@@ -1,4 +1,4 @@
-# ComfyUI-FLUX2MAX-KLEIN9B-API-Nodes
+# ComfyUI-FLUX.2-API-Nodes
 
 ComfyUI **V3** node pack for all **FLUX.2** models via the [BFL API](https://api.bfl.ai/).
 
@@ -29,8 +29,8 @@ ComfyUI **V3** node pack for all **FLUX.2** models via the [BFL API](https://api
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/olliethomas1992/ComfyUI-FLUX2MAX-KLEIN9B-API-Nodes.git
-pip install -r ComfyUI-FLUX2MAX-KLEIN9B-API-Nodes/requirements.txt
+git clone https://github.com/olliethomas1992/ComfyUI-FLUX.2-API-Nodes.git
+pip install -r ComfyUI-FLUX.2-API-Nodes/requirements.txt
 ```
 
 ## Configuration

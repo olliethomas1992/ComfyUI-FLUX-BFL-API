@@ -1,9 +1,9 @@
 [project]
-name = "comfyui-flux2max-klein9b-api-nodes"
+name = "comfyui-flux2-api-nodes"
 description = "ComfyUI V3 nodes for all FLUX.2 models via the BFL API — direct IMAGE inputs, async polling, progress bars."
 version = "2.0.0"
 license = {file = "LICENSE"}
 dependencies = ["torch", "aiohttp"]
 
 [project.urls]
-Repository = "https://github.com/olliethomas1992/ComfyUI-FLUX2MAX-KLEIN9B-API-Nodes"
+Repository = "https://github.com/olliethomas1992/ComfyUI-FLUX.2-API-Nodes"
